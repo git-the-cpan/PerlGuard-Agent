@@ -32,11 +32,12 @@
       },
       "runtime" : {
          "requires" : {
+            "HTTP::Async" : "0",
             "JSON" : "0",
             "Moo" : "2"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.02"
+   "version" : "0.03"
 }

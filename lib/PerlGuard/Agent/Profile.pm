@@ -157,6 +157,7 @@ sub generate_new_cross_application_tracing_id {
 sub DESTROY {
   my $self = shift;
 
+  $self->agent->output->flush();
   $self->agent->remove_profile($self->uuid);
 }
 

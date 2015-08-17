@@ -20,5 +20,9 @@ sub save {
   print STDERR "======\n";
 }
 
+sub flush {
+  #noop
+}
+
 
 1;

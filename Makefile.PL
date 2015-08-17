@@ -8,6 +8,7 @@ WriteMakefile(
     PREREQ_PM         => {
       'Moo' => 2,
       'JSON' => 0,
+      'HTTP::Async' => 0,
 
       
 

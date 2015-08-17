@@ -12,7 +12,7 @@ use Time::HiRes;
 has api_key => ( is => 'rw', lazy => 1, default => \&_attempt_to_fetch_api_key_from_env_or_die);
 has base_url => ( is => 'rw', lazy => 1, default => \&DEFAULT_BASE_URL );
 
-has async_http => ( is => 'rw', lazy => 1, default => sub { HTTP::Async->new(timeout => 20, max_request_time=>20, slots=>1000000); });
+has async_http => ( is => 'rw', lazy => 1, default => sub { HTTP::Async->new(timeout => 2, max_request_time=>2, slots=>1000000); });
 
 has disabled_until => (is => 'rw', lazy => 1, default => sub { [0,0] });
 
@@ -56,9 +56,6 @@ sub save {
     "sum_of_web_transactions" => $profile->webservice_transaction_count,
   };
 
-  #use Data::Dumper;
-  #print STDERR Dumper $content;
-
   $content = $self->json_encoder->encode($content);
 
   $self->check_responses();
@@ -68,9 +65,7 @@ sub save {
     return;
   }
 
-  #without_collectors_do {}
-
-  #print STDERR 'Total Count: ' . $self->async_http->total_count . "\n";
+  #without_collectors_do {} - We can't really include sending this report in the request time..
 
   if($self->async_http->to_send_count > 250) {
     print STDERR  "PerlGuard send queue has reached 250, dropping subsequent requests\n";
@@ -92,18 +87,24 @@ sub save {
     $self->async_http->poke();
   }
 
-  $self->async_http->remove($request_id);
+  # This helped keep things cleaner on local but it quite obviously causes a race condition, 
+  #$self->async_http->remove($request_id);
 
-  #use Data::Dumper;
-  #print STDERR Dumper $content;
 
+}
+
+sub flush {
+  my $self = shift;
+
+  while($self->async_http->not_empty) {
+    $self->async_http->next_response( $self->async_http->max_request_time );
+  }
 }
 
 sub check_responses {
   my $self = shift;
 
   while(my $response = $self->async_http->next_response) {
-    #print STDERR "Response is " . $response->as_string ."\n";
     if($response->is_error) {
       print STDERR "Response is " . $response->as_string ."\n";
 
@@ -138,7 +139,6 @@ sub format_database_transactions {
     }
 
     push @results, $row;
-
   }
 
   return \@results;

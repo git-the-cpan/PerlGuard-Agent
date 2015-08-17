@@ -7,3 +7,6 @@ Revision history for Perl extension PerlGuard::Agent.
 0.02 Mon Aug 17 2015
   - Add Monitors for DBI and Net::HTTP
   - Add output methods to communicate with the server using an alpha collector version
+
+0.03 Mon Aug 17 2015
+  - Temporary change to HTTP::Async to make sure we process all outbound messages

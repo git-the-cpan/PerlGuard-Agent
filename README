@@ -1,16 +1,25 @@
-PerlGuard-Agent version 0.01
+PerlGuard-Agent version 0.03
 ============================
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+PerlGuard::Agent - Trace your application performance with PerlGuard
 
-A README file is required for CPAN modules since CPAN extracts the
-README file from a module distribution so that people browsing the
-archive can use it get an idea of the modules uses. It is usually a
-good idea to provide version information here so that people can
-decide whether fixes for the module are worth downloading.
+This is the PerlGuard agent which will help you collect and store 
+metrics also known as application performance monitoring. You will usually use
+on of the plugins to integrate assuming you are using a supported framework.
+
+DBI is required for DBI monitoring
+Net::HTTP is requires for HTTP monitoring
+
+  use PerlGuard::Agent;
+  my $agent = PerlGuard::Agent->new($config);
+  my $profile = $agent->create_new_profile();
+  $profile->start_recording;
+  $profile->url( $my_url );
+  $profile->http_method( $my_http_method );
+  $profile->controller( "My::Controller" );
+  $profile->controller_action( "index_pages" );
+  $profile->finish_recording;
+  # Let variables fall out of scope to perform cleanup
 
 INSTALLATION
 
@@ -21,11 +30,6 @@ To install this module type the following:
    make test
    make install
 
-DEPENDENCIES
-
-This module requires these other modules and libraries:
-
-  blah blah blah
 
 COPYRIGHT AND LICENCE
 
