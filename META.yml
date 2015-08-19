@@ -21,4 +21,5 @@ requires:
   HTTP::Async: '0'
   JSON: '0'
   Moo: '2'
-version: '0.03'
+  Time::HiRes: '0'
+version: '0.04'

@@ -10,3 +10,6 @@ Revision history for Perl extension PerlGuard::Agent.
 
 0.03 Mon Aug 17 2015
   - Temporary change to HTTP::Async to make sure we process all outbound messages
+
+0.04 Wed 19 Aug 2015
+  - Had a missing file from Manifest

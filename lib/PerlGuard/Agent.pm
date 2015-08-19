@@ -5,7 +5,7 @@ use PerlGuard::Agent::Profile;
 use Scalar::Util;
 
 our @ISA = qw();
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 has output_method => ( is => 'rw', lazy => 1, default => sub { 'PerlGuard::Agent::Output::PerlGuardServer' } );
 has output => (is => 'lazy' );
