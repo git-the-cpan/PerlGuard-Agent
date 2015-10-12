@@ -52,6 +52,11 @@ sub finish_recording {
 
   $self->{finish_time_hires} =  [Time::HiRes::gettimeofday()];
   $self->{finish_time} = DateTime->now();
+}
+
+sub save {
+  my $self = shift;
+
   $self->agent->output->save($self);
 }
 

@@ -3,6 +3,7 @@ use Moo;
 use Data::Dumper;
 use PerlGuard::Agent::LexWrap;
 use Time::HiRes;
+use Scalar::Util qw(blessed);
 extends 'PerlGuard::Agent::Monitors';
 
 has requests_in_progress => ( is => 'rw', default => sub { {} });
@@ -83,12 +84,14 @@ sub simple_request_wrapper_sub {
     my $request = $_[0]->[1];
     my $request_id = $profile->generate_new_cross_application_tracing_id();
 
-    $request->header( 'X-PerlGuard-Auto-Track' => $request_id );    
+    $request->header( 'X-PerlGuard-Auto-Track' => $request_id ); 
+
+    my $uri = blessed($request->uri) ? $request->uri->as_string : $request->uri;   
 
     $self->requests_in_progress->{$request_id} = {
       cross_application_tracing_id => $request_id,
       start_time => [Time::HiRes::gettimeofday()],
-      uri => $request->uri,
+      uri => $uri,
       method => $request->method,
     };
 

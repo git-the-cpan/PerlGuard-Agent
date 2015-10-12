@@ -13,3 +13,6 @@ Revision history for Perl extension PerlGuard::Agent.
 
 0.04 Wed 19 Aug 2015
   - Had a missing file from Manifest
+
+0.05 Mon 12 Oct 2015
+  - Mojo apps can now submit profiles on the next tick and free up the client

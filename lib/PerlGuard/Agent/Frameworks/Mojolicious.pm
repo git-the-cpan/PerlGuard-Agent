@@ -2,6 +2,7 @@ package PerlGuard::Agent::Frameworks::Mojolicious;
 #use Moo;
 use PerlGuard::Agent;
 use Mojo::Base 'Mojolicious::Plugin';
+use Mojo::IOLoop;
 
 BEGIN {
   $PerlGuard::Agent::Frameworks::Mojolicious::VERSION = '1.00';
@@ -38,7 +39,24 @@ sub register {
       my $c = shift;
 
       return if ($c->stash->{'mojo.static'});
-      $c->tx->{'PerlGuard::Profile'}->finish_recording;
+
+      my $profile = $c->tx->{'PerlGuard::Profile'};
+      $profile->finish_recording();
+      $c->tx->{'PerlGuard::Profile'} = undef;
+
+      #This does not do what I think it does
+      if(Mojo::IOLoop->is_running()) {
+        Mojo::IOLoop->timer(1 => sub {
+          my $loop = shift;
+          
+          $profile->save;
+        });
+      }
+      else {
+        $profile->save;
+      }
+
+      
     });
 
 
