@@ -3,9 +3,10 @@ use 5.010001;
 use Moo;
 use PerlGuard::Agent::Profile;
 use Scalar::Util;
+use Data::UUID;
 
 our @ISA = qw();
-our $VERSION = '0.05';
+our $VERSION = '0.07';
 
 has output_method => ( is => 'rw', lazy => 1, default => sub { 'PerlGuard::Agent::Output::PerlGuardServer' } );
 has output => (is => 'lazy' );
@@ -15,6 +16,8 @@ has monitors => ( is => 'rw', default => sub { [] });
 
 has async_mode => (is => 'rw', default => sub { 0 });
 has api_key => (is => 'rw');
+
+has data_uuid => (is => 'ro', default => sub { Data::UUID->new });
 
 our $CURRENT_PROFILE_UUID = undef;
 
@@ -28,6 +31,7 @@ sub current_profile {
   #Check if $CURRENT_PROFILE has a value in is
   if(defined $CURRENT_PROFILE_UUID) {
     if($self->profiles->{$CURRENT_PROFILE_UUID}) {
+      warn "Profile identified has finished, this should not happen" if $self->profiles->{$CURRENT_PROFILE_UUID}->has_finished();
       return $self->profiles->{$CURRENT_PROFILE_UUID};
     }
     else {
@@ -35,12 +39,16 @@ sub current_profile {
     }
   }
   else {
+    warn "Using fallback mechanism to identify profile";
+
+
+    # This is not safe, as we could get monitors reporting on the wrong profile
     my @uuids = keys %{ $self->profiles };
     if(scalar(@uuids) == 1) {
       return $self->profiles->{$uuids[0]};
     }
     else {
-      warn "Could not identify the most recent profile";
+      warn "Could not identify the most recent profile, we had " . scalar(@uuids) . "  profiles currently active with keys @uuids and the current profile var thinks its " . $CURRENT_PROFILE_UUID  ;
       return;
     }
   }
@@ -71,13 +79,17 @@ sub add_database_transaction {
   if($intended_profile_uuid and (my $profile = $self->profiles->{$intended_profile_uuid})) {
     $profile->add_database_transaction($database_transaction);
   } else {
-    foreach my $profile(values %{$self->profiles}) {
-      unless($profile) {
-        warn "Profile not cleaned up correctly";
-        next;
-      }
-      $profile->add_database_transaction($database_transaction);
+    # Profile not specified! Time to guess
+
+    my $current_profile = $self->current_profile;
+    if($current_profile) {
+      $current_profile->add_database_transaction($database_transaction);
     }
+    else {
+      warn "Caught a database transaction occuring outside of a profile"
+    }
+    
+    
   }
 }
 
@@ -89,13 +101,14 @@ sub add_webservice_transaction {
   if($intended_profile_uuid and (my $profile = $self->profiles->{$intended_profile_uuid})) {
     $profile->add_webservice_transaction($web_transaction);
   } else {
-    foreach my $profile(values %{$self->profiles}) {
-      unless($profile) {
-        warn "Profile not cleaned up correctly";
-        next;
-      }
-      $profile->add_webservice_transaction($web_transaction);
+    # Profile not specified
+    my $current_profile = $self->current_profile;
+    if($current_profile) {
+      $current_profile->add_webservice_transaction($web_transaction);;
     }
+    else {
+      warn "Caught a web transaction occuring outside of a profile"
+    }    
   }
 
 }
@@ -105,6 +118,7 @@ sub create_new_profile {
 
   my $profile = PerlGuard::Agent::Profile->new({
     # Set some things
+    uuid => $self->data_uuid->create_str(),
     agent => $self
   });
 

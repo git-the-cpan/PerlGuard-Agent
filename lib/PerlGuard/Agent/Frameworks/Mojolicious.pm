@@ -4,6 +4,7 @@ use PerlGuard::Agent;
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::IOLoop;
 
+
 BEGIN {
   $PerlGuard::Agent::Frameworks::Mojolicious::VERSION = '1.00';
 }
@@ -18,9 +19,6 @@ sub register {
         return $agent;
     });
 
-    # $app->hook(after_render => sub {
-    #   my ($c, $output, $format) = @_;
-    # });
 
     $app->hook(after_build_tx => sub {
       my $tx = shift;
@@ -31,6 +29,9 @@ sub register {
           $tx->{'PerlGuard::Profile'} //= $profile;
 
           $profile->start_recording;
+        }
+        else {
+          warn "I think I already have a profile on this TX even though its just been built" if $ENV{'PERLGUARD_AGENT_DEBUG'}
         }      
     });
 
@@ -68,20 +69,42 @@ sub register {
 
         unless($c->tx->{'PerlGuard::Profile'}) {
 
+          warn "In before_routes we didn't have a profile on the transaction already so we had to make it";
           my $profile = $agent->create_new_profile();
 
           $c->tx->{'PerlGuard::Profile'} //= $profile;
 
           $profile->start_recording;
         }
+        else {
+          #$c->stash('PerlGuard::Profile', $c->tx->{'PerlGuard::Profile'});
+        }
       }
 
     });
 
+    $app->hook(around_dispatch => sub {
+      my ($next, $c) = @_;
+
+      #$c->stash->{'PerlGuard::Profile'} = $c->tx->{'PerlGuard::Profile'};
+
+      do {
+        if($c->tx->{'PerlGuard::Profile'}) {
+                local $PerlGuard::Agent::CURRENT_PROFILE_UUID = $c->tx->{'PerlGuard::Profile'}->uuid() unless $c->stash->{'mojo.static'};
+                $next->();
+        }
+        else {
+                warn "Perlguard profile was not defined at this point";
+                $next->();
+        }
+      };
+
+    });
 
     $app->hook(around_action => sub {
       my ($next, $c, $action, $last) = @_;
-      
+
+      #$c->stash('PerlGuard::Profile', $c->tx->{'PerlGuard::Profile'});
 
       unless($c->stash->{'mojo.static'}) {
         my $profile = $c->tx->{'PerlGuard::Profile'};
@@ -97,7 +120,11 @@ sub register {
 
       }
 
-      $next->();
+      do {
+        local $PerlGuard::Agent::CURRENT_PROFILE_UUID = $c->tx->{'PerlGuard::Profile'}->uuid() unless $c->stash->{'mojo.static'} ;
+        $next->();
+      };
+
 
     });
 

@@ -54,6 +54,13 @@ sub finish_recording {
   $self->{finish_time} = DateTime->now();
 }
 
+sub has_finished {
+  my $self = shift;
+
+  return 1 if defined $self->{finish_time_hires};
+  return 0;
+}
+
 sub save {
   my $self = shift;
 

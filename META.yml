@@ -18,8 +18,9 @@ no_index:
     - t
     - inc
 requires:
+  Data::UUID: '0'
   HTTP::Async: '0'
   JSON: '0'
   Moo: '2'
   Time::HiRes: '0'
-version: '0.05'
+version: '0.07'

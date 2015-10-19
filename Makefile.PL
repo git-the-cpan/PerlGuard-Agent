@@ -9,7 +9,8 @@ WriteMakefile(
       'Moo' => 2,
       'JSON' => 0,
       'HTTP::Async' => 0,
-      'Time::HiRes' => 0
+      'Time::HiRes' => 0,
+      'Data::UUID' => 0
 
       
 
