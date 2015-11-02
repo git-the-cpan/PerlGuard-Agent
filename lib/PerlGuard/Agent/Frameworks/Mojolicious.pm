@@ -109,15 +109,16 @@ sub register {
       unless($c->stash->{'mojo.static'}) {
         my $profile = $c->tx->{'PerlGuard::Profile'};
 
-        $profile->url( $c->req->url );
-        $profile->http_method( $c->req->method );
+        $profile->url( $c->req->url ) if $c->req;
+        $profile->http_method( $c->req->method ) if $c->req;
         $profile->controller( ref($c) );
         $profile->controller_action( $c->stash->{action} );
 
-        if( my $cross_application_tracing_id = $c->req->headers->header("X-PerlGuard-Auto-Track") ) {
-          $profile->cross_application_tracing_id($cross_application_tracing_id);
+        if( $c->req ) {
+          if( my $cross_application_tracing_id = $c->req->headers->header("X-PerlGuard-Auto-Track") ) {
+            $profile->cross_application_tracing_id($cross_application_tracing_id);
+          }
         }
-
       }
 
       do {
