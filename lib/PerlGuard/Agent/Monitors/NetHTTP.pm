@@ -51,7 +51,7 @@ sub simple_response_wrapper_sub {
     my $request_id = $request->header('X-PerlGuard-Auto-Track');
     my $trace = $self->requests_in_progress->{$request_id};
     unless($trace) {
-      warn "Could not find a transaction trace matching the request\n";
+      #warn "Could not find a transaction trace matching the request\n";
       return;
     }
 
@@ -75,11 +75,15 @@ sub simple_request_wrapper_sub {
   my $self = shift;
 
   return sub {
-    my $profile = $self->agent->current_profile();
-    unless($profile) {
-      warn "Could not associate HTTP request with a profile";
+
+    #Determine if we are ok to log
+
+    unless($self && $self->agent && $self->agent->current_profile()) {
+      #warn "Could not associate HTTP request with a profile, perhaps this request happened outside of the request";
       return;
     }
+
+    my $profile = $self->agent->current_profile();
 
     my $request = $_[0]->[1];
     my $request_id = $profile->generate_new_cross_application_tracing_id();

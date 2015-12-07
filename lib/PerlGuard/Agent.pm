@@ -6,7 +6,7 @@ use Scalar::Util;
 use Data::UUID;
 
 our @ISA = qw();
-our $VERSION = '0.08';
+our $VERSION = '0.10';
 
 has output_method => ( is => 'rw', lazy => 1, default => sub { 'PerlGuard::Agent::Output::PerlGuardServer' } );
 has output => (is => 'lazy' );
@@ -18,6 +18,8 @@ has async_mode => (is => 'rw', default => sub { 0 });
 has api_key => (is => 'rw');
 
 has data_uuid => (is => 'ro', default => sub { Data::UUID->new });
+
+has warnings => (is => 'rw', default => sub { 0 });
 
 our $CURRENT_PROFILE_UUID = undef;
 
@@ -31,16 +33,21 @@ sub current_profile {
   #Check if $CURRENT_PROFILE has a value in is
   if(defined $CURRENT_PROFILE_UUID) {
     if($self->profiles->{$CURRENT_PROFILE_UUID}) {
-      warn "Profile identified has finished, this should not happen" if $self->profiles->{$CURRENT_PROFILE_UUID}->has_finished();
+      if($self->warnings) {
+        warn "Profile identified has finished, this should not happen" if $self->profiles->{$CURRENT_PROFILE_UUID}->has_finished();
+      }
       return $self->profiles->{$CURRENT_PROFILE_UUID};
     }
     else {
-      warn "the package variable CURRENT_PROFILE_UUID is not defined, this is potentially a race condition bug";
+      if($self->warnings) {
+        warn "the package variable CURRENT_PROFILE_UUID is not defined, this is potentially a race condition bug";
+      }
     }
   }
   else {
-    warn "Using fallback mechanism to identify profile";
-
+    if($self->warnings) {
+      warn "Using fallback mechanism to identify profile";
+    }
 
     # This is not safe, as we could get monitors reporting on the wrong profile
     my @uuids = keys %{ $self->profiles };
@@ -48,7 +55,9 @@ sub current_profile {
       return $self->profiles->{$uuids[0]};
     }
     else {
-      warn "Could not identify the most recent profile, we had " . scalar(@uuids) . "  profiles currently active with keys @uuids and the current profile var thinks its " . $CURRENT_PROFILE_UUID  ;
+      if($self->warnings) {
+        warn "Could not identify the most recent profile, we had " . scalar(@uuids) . "  profiles currently active with keys @uuids and the current profile var thinks its " . $CURRENT_PROFILE_UUID  ;
+      }
       return;
     }
   }
@@ -82,11 +91,13 @@ sub add_database_transaction {
     # Profile not specified! Time to guess
 
     my $current_profile = $self->current_profile;
-    if($current_profile) {
+    if($current_profile && Scalar::Util::blessed($current_profile)) {
       $current_profile->add_database_transaction($database_transaction);
     }
     else {
-      warn "Caught a database transaction occuring outside of a profile"
+      if($self->warnings) {
+        warn "Caught a database transaction occuring outside of a profile";
+      }
     }
     
     
@@ -103,11 +114,13 @@ sub add_webservice_transaction {
   } else {
     # Profile not specified
     my $current_profile = $self->current_profile;
-    if($current_profile) {
+    if($current_profile && Scalar::Util::blessed($current_profile)) {
       $current_profile->add_webservice_transaction($web_transaction);;
     }
     else {
-      warn "Caught a web transaction occuring outside of a profile"
+      if($self->warnings) {
+        warn "Caught a web transaction occuring outside of a profile"
+      }
     }    
   }
 

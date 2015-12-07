@@ -58,22 +58,24 @@ sub save {
 
   $content = $self->json_encoder->encode($content);
 
+  #warn $content;
+
   $self->check_responses();
 
   unless($self->can_run_yet()) {
-    print STDERR "Skipping due to previous errors\n";
+    warn "Skipping due to previous errors\n";
     return;
   }
 
   #without_collectors_do {} - We can't really include sending this report in the request time..
 
   if($self->async_http->to_send_count > 250) {
-    print STDERR  "PerlGuard send queue has reached 250, dropping subsequent requests\n";
+    warn  "PerlGuard send queue has reached 250, dropping subsequent requests\n";
     return;
   }
 
   if($self->async_http->in_progress_count > 250) {
-    print STDERR  "PerlGuard in progress count queue has reached 250, dropping subsequent requests\n";
+    warn  "PerlGuard in progress count queue has reached 250, dropping subsequent requests\n";
     return;
   }
 
@@ -86,6 +88,8 @@ sub save {
   while($self->async_http->to_send_count > 0) {
     $self->async_http->poke();
   }
+
+  #warn "completed send";
 
   # This helped keep things cleaner on local but it quite obviously causes a race condition, 
   #$self->async_http->remove($request_id);
@@ -106,7 +110,7 @@ sub check_responses {
 
   while(my $response = $self->async_http->next_response) {
     if($response->is_error) {
-      print STDERR "Response is " . $response->as_string ."\n";
+      #print STDERR "Response is " . $response->as_string ."\n";
 
       my $next_run_time = [Time::HiRes::gettimeofday];
       $next_run_time->[0]++;

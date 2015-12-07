@@ -9,7 +9,7 @@ lib/PerlGuard/Agent/Frameworks/Mojolicious.pm
 lib/PerlGuard/Agent/Frameworks/Script.pm
 lib/PerlGuard/Agent/Monitors.pm
 lib/PerlGuard/Agent/Monitors/DBI.pm
-lib/PerlGuard/Agent/Monitors/DBI/viaDBILogger.pm
+lib/PerlGuard/Agent/Monitors/DBI/Tracer.pm
 lib/PerlGuard/Agent/Monitors/NetHTTP.pm
 lib/PerlGuard/Agent/Output.pm
 lib/PerlGuard/Agent/Output/PerlGuardServer.pm

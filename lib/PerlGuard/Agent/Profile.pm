@@ -96,6 +96,13 @@ sub database_elapsed_time {
 
   my $total = 0;
   foreach my $database_transaction(@{$self->database_transactions}) {
+
+    #warn $database_transaction->{start_time};
+
+    #warn "start " . join(",", @{$database_transaction->{start_time}});
+    #warn "finish " . join(",", @{$database_transaction->{finish_time}});
+    #warn "interval " . Time::HiRes::tv_interval( $database_transaction->{start_time}, $database_transaction->{finish_time});
+
     $total += Time::HiRes::tv_interval( $database_transaction->{start_time}, $database_transaction->{finish_time});
   }
 

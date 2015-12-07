@@ -13,21 +13,16 @@ use warnings;
 use FindBin;
 # use Mojo::JSON;
 
-use Test::More tests => 3;
+use Test::More tests => 6;
 BEGIN { use_ok('PerlGuard::Agent') };
 BEGIN { use_ok('PerlGuard::Agent::Profile') };
 BEGIN { use_ok('PerlGuard::Agent::Output::StandardError') };
 # BEGIN { use_ok('PerlGuard::Agent::Frameworks::Mojolicious') };
-# BEGIN { use_ok('PerlGuard::Agent::Monitors::DBI') };
+BEGIN { use_ok('PerlGuard::Agent::Monitors::DBI') };
+BEGIN { use_ok('PerlGuard::Agent::Monitors::NetHTTP') };
+BEGIN { use_ok('PerlGuard::Agent::Output::PerlGuardServer') };
+
+
 #########################
 
-open my $fh, '<', "$FindBin::Bin/assets/mojo_pg.txt";
-my $pg_data = do { local $/; <$fh> };
-
 my $agent = PerlGuard::Agent->new();
-# my $dbi = PerlGuard::Agent::Monitors::DBI->new(agent => $agent);
-# my $events = Mojo::JSON::decode_json($pg_data);
-# my $event = $dbi->translate_raw_dbi_trace_to_database_transaction($events->[0]);
-
-# is_deeply( $event  ,{ start_time => [1437663722,135410], finish_time => [1437663722,136976], rows_returned => 1, query => 'select * from users where id = ? and enabled = true and deleted = false limit 1' } , "First event");
-
