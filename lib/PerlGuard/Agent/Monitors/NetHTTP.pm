@@ -49,6 +49,8 @@ sub simple_response_wrapper_sub {
     my $response = $_[4];
 
     my $request_id = $request->header('X-PerlGuard-Auto-Track');
+
+    return unless $request_id;
     my $trace = $self->requests_in_progress->{$request_id};
     unless($trace) {
       #warn "Could not find a transaction trace matching the request\n";
