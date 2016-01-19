@@ -76,7 +76,9 @@ sub import {
     $profile->url( $controller_instance->query->self_url );
     $profile->http_method( $controller_instance->query->request_method );
     $profile->controller( ref($controller_instance) );
-    $profile->controller_action( $controller_instance->get_current_runmode );
+
+    #For paul lets update the controller action to include the HTTP method
+    $profile->controller_action( $controller_instance->get_current_runmode . "_" . uc($controller_instance->query->request_method) );
 
 
     if( my $cross_application_tracing_id = $controller_instance->query->http("X-PerlGuard-Auto-Track") ) {
