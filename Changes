@@ -23,3 +23,6 @@ Revision history for Perl extension PerlGuard::Agent.
 0.12 Tue 19 Jan 2016
   - CGI::Application apps tend to have a single controller action that accepts get AND post and then 
     does different things depending on which it is, to help split these up lets append this to the controller action
+
+0.13 Wed 20 Jan 2016
+  - Drop Moo requirement down to version 1

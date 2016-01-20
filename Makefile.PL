@@ -6,7 +6,7 @@ WriteMakefile(
     NAME              => 'PerlGuard::Agent',
     VERSION_FROM      => 'lib/PerlGuard/Agent.pm', # finds $VERSION
     PREREQ_PM         => {
-      'Moo' => 2,
+      'Moo' => 1,
       'JSON' => 0,
       'HTTP::Async' => 0,
       'Time::HiRes' => 0,

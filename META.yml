@@ -21,6 +21,6 @@ requires:
   Data::UUID: '0'
   HTTP::Async: '0'
   JSON: '0'
-  Moo: '2'
+  Moo: '1'
   Time::HiRes: '0'
-version: '0.12'
+version: '0.13'
