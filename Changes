@@ -26,3 +26,7 @@ Revision history for Perl extension PerlGuard::Agent.
 
 0.13 Wed 20 Jan 2016
   - Drop Moo requirement down to version 1
+
+0.14 Mon 25 Jan 2016
+  - Silence some warnings
+  - Attempt to show some useful information for requests that fail routing (404s etc)

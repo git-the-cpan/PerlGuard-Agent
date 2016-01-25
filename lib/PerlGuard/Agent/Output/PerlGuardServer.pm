@@ -39,24 +39,35 @@ sub save {
   my $profile = shift;
 
   return unless $profile->should_save();
+  my $content;
 
-  my $content = {
-    "start_time" => $profile->start_time,
-    "finish_time" => $profile->finish_time,
-    "total_elapsed_time_in_ms" => $profile->total_elapsed_time_in_ms,
-    "cross_application_tracing_id" => $profile->cross_application_tracing_id,
-    # "project_id": 10,
-    "type" => "web",
-    "grouping_name" => $profile->controller . '#' . $profile->controller_action,
-    "database_transactions" => $self->format_database_transactions($profile),
-    "web_transactions" => $self->format_webservice_transactions($profile),   
-    "database_elapsed_time_in_ms" => $profile->database_elapsed_time_in_ms,
-    "web_elapsed_time_in_ms" => $profile->webservice_elapsed_time_in_ms,
-    "sum_of_database_transactions" => $profile->database_transaction_count,
-    "sum_of_web_transactions" => $profile->webservice_transaction_count,
+  do {
+    no warnings 'uninitialized'; #Protect our end users from any future errors we might make here
+
+    my $controller = $profile->controller || $profile->http_code;
+    my $action = $profile->controller_action || $profile->url;
+
+    $content = {
+      "start_time" => $profile->start_time,
+      "finish_time" => $profile->finish_time,
+      "total_elapsed_time_in_ms" => $profile->total_elapsed_time_in_ms,
+      "cross_application_tracing_id" => $profile->cross_application_tracing_id,
+      # "project_id": 10,
+      "type" => "web",
+      "grouping_name" => $controller . '#' . $action,
+      "database_transactions" => $self->format_database_transactions($profile),
+      "web_transactions" => $self->format_webservice_transactions($profile),   
+      "database_elapsed_time_in_ms" => $profile->database_elapsed_time_in_ms,
+      "web_elapsed_time_in_ms" => $profile->webservice_elapsed_time_in_ms,
+      "sum_of_database_transactions" => $profile->database_transaction_count,
+      "sum_of_web_transactions" => $profile->webservice_transaction_count,
+    };
+
+    $content = $self->json_encoder->encode($content);
+
   };
 
-  $content = $self->json_encoder->encode($content);
+  
 
   #warn $content;
 

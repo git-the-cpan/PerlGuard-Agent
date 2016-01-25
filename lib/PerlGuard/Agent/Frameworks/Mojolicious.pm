@@ -43,6 +43,7 @@ sub register {
 
       my $profile = $c->tx->{'PerlGuard::Profile'};
       $profile->finish_recording();
+      $profile->http_code( $c->tx->res->code );
       $c->tx->{'PerlGuard::Profile'} = undef;
 
       #This does not do what I think it does
@@ -56,8 +57,6 @@ sub register {
       else {
         $profile->save;
       }
-
-      
     });
 
 
@@ -71,12 +70,13 @@ sub register {
 
           warn "In before_routes we didn't have a profile on the transaction already so we had to make it";
           my $profile = $agent->create_new_profile();
-
           $c->tx->{'PerlGuard::Profile'} //= $profile;
 
           $profile->start_recording;
         }
         else {
+          $c->tx->{'PerlGuard::Profile'}->http_code( $c->tx->res->code );
+          $c->tx->{'PerlGuard::Profile'}->url( $c->tx->req->url );
           #$c->stash('PerlGuard::Profile', $c->tx->{'PerlGuard::Profile'});
         }
       }
@@ -113,6 +113,7 @@ sub register {
         $profile->http_method( $c->req->method ) if $c->req;
         $profile->controller( ref($c) );
         $profile->controller_action( $c->stash->{action} );
+        $profile->http_code( $c->tx->res->code );
 
         if( $c->req ) {
           if( my $cross_application_tracing_id = $c->req->headers->header("X-PerlGuard-Auto-Track") ) {

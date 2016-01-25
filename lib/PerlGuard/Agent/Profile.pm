@@ -17,6 +17,7 @@ has url => ( is => 'rw' );
 has http_method => ( is => 'rw' );
 has controller => ( is => 'rw' );
 has controller_action => ( is => 'rw' );
+has http_code => ( is => 'rw' );
 
 has should_save => ( is => 'rw', default => sub { 1 } );
 
