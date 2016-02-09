@@ -104,30 +104,37 @@ sub register {
     $app->hook(around_action => sub {
       my ($next, $c, $action, $last) = @_;
 
-      #$c->stash('PerlGuard::Profile', $c->tx->{'PerlGuard::Profile'});
-
       unless($c->stash->{'mojo.static'}) {
         my $profile = $c->tx->{'PerlGuard::Profile'};
 
-        $profile->url( $c->req->url ) if $c->req;
-        $profile->http_method( $c->req->method ) if $c->req;
-        $profile->controller( ref($c) );
-        $profile->controller_action( $c->stash->{action} );
-        $profile->http_code( $c->tx->res->code );
-
-        if( $c->req ) {
-          if( my $cross_application_tracing_id = $c->req->headers->header("X-PerlGuard-Auto-Track") ) {
-            $profile->cross_application_tracing_id($cross_application_tracing_id);
-          }
+        unless($profile) {
+          #warn "PerlGuard profile was not defined when we expected it to be";
         }
+        else {
+          $profile->controller( ref($c) );
+          $profile->controller_action( $c->stash->{action} );
+          $profile->http_code( $c->tx->res->code );
+
+          if( $c->req ) {
+
+            $profile->url( $c->req->url );
+            $profile->http_method( $c->req->method );
+
+            if( my $cross_application_tracing_id = $c->req->headers->header("X-PerlGuard-Auto-Track") ) {
+              $profile->cross_application_tracing_id($cross_application_tracing_id);
+            }
+          }
+
+          do {
+            local $PerlGuard::Agent::CURRENT_PROFILE_UUID = $c->tx->{'PerlGuard::Profile'}->uuid() unless $c->stash->{'mojo.static'} ;
+            return $next->();
+          };          
+
+        }
+
       }
 
-      do {
-        local $PerlGuard::Agent::CURRENT_PROFILE_UUID = $c->tx->{'PerlGuard::Profile'}->uuid() unless $c->stash->{'mojo.static'} ;
-        $next->();
-      };
-
-
+      $next->();
     });
 
     $app->helper(perlguard_profile => sub {

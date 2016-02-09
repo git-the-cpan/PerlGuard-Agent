@@ -6,7 +6,7 @@ use Scalar::Util;
 use Data::UUID;
 
 our @ISA = qw();
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 has output_method => ( is => 'rw', lazy => 1, default => sub { 'PerlGuard::Agent::Output::PerlGuardServer' } );
 has output => (is => 'lazy' );
